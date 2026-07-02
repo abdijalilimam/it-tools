@@ -1,3 +1,4 @@
+##This is the file where the actual resources are created
 #Created aws_vpc 
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr

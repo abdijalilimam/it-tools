@@ -1,3 +1,4 @@
+#This file is needed so that it passes information INTO this module from the outside root files.
 variable "vpc_name" {
   description = "The name of the vpc"
   type        = string
