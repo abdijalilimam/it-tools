@@ -1,6 +1,6 @@
 #Security group 
 resource "aws_security_group" "alb" {
-  name   = "${var.lb_name}-alb-sg"
+  name   = "${var.alb_name}-alb-sg"
   vpc_id = var.vpc_id
   ingress {
     from_port   = 80
@@ -21,32 +21,29 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
-    Name = "${var.lb_name}-alb-sg"
+    Name = "${var.alb_name}-alb-sg"
   }
 }
 
-
-
 #application load balancer 
 resource "aws_lb" "main" {
-  name               = var.lb_name
+  name               = var.alb_name
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = var.public_subnet_ids
-
   tags = {
-    Name = var.lb_name
+    Name = var.alb_name
   }
 }
 
 #target group
-resource "aws_lb_target_group" "main" { 
-name = "${var.lb_name}-tg" 
-port = 80 
-protocol = "HTTP" 
-vpc_id = var.vpc_id
-target_type = "ip" 
+resource "aws_lb_target_group" "main" {
+  name        = "${var.alb_name}-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
 }
 
 #alb listener
@@ -54,7 +51,6 @@ resource "aws_lb_listener" "main" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTP"
-
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.main.arn
