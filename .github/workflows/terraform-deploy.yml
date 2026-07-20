@@ -51,5 +51,6 @@ jobs:
 
     - name: Health Check
       run: |
+        sleep 60
         curl --fail --retry 5 --retry-delay 10 ${{ env.APP_URL }}
         echo "Health check passed"
