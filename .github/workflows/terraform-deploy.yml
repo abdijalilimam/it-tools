@@ -1,0 +1,55 @@
+#terraform deploy
+name: Terraform Deploy
+
+on:
+  workflow_run:
+    workflows: ["Docker Build and Push"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-2
+  TF_DIR: ./aws
+  APP_URL: http://it-tools.abdijalil.com
+  CONTAINER_IMAGE: 305476115260.dkr.ecr.us-east-2.amazonaws.com/it-tools:${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: checkout code 
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+          terraform_version: 1.5.0
+
+    - name: Terraform Init
+      working-directory: ${{ env.TF_DIR }}
+      run: terraform init
+    
+    - name: Terraform plan
+      working-directory: ${{ env.TF_DIR }}
+      run: terraform plan -var="container_image=${{ env.CONTAINER_IMAGE }}"
+    
+    
+    - name: Terraform apply
+      working-directory: ${{ env.TF_DIR }}
+      run: terraform apply -auto-approve -var="container_image=${{ env.CONTAINER_IMAGE }}"
+
+    - name: Health Check
+      run: |
+        curl --fail --retry 5 --retry-delay 10 ${{ env.APP_URL }}
+        echo "Health check passed"
