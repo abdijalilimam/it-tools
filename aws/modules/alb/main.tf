@@ -32,6 +32,10 @@ resource "aws_lb" "main" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = var.public_subnet_ids
+
+  lifecycle {
+    prevent_destroy = true
+  }
   tags = {
     Name = var.alb_name
   }
