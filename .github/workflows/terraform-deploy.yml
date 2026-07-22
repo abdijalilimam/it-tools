@@ -11,7 +11,7 @@ on:
 env:
   AWS_REGION: us-east-2
   TF_DIR: ./aws
-  APP_URL: http://it-tools.abdijalil.com
+  APP_URL: https://it-tools.abdijalil.com
   CONTAINER_IMAGE: 305476115260.dkr.ecr.us-east-2.amazonaws.com/it-tools:${{ github.sha }}
 
 jobs:
