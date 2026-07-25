@@ -1,0 +1,17 @@
+terraform {
+  backend "s3" {
+    bucket = "it-tools-terraform-state-305476115260"
+    key    = "bootstrap/terraform.tfstate"
+    region = "us-east-2"
+  }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-east-2"
+}

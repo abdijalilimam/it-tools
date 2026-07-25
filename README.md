@@ -57,62 +57,48 @@ it-tools/
 
 ---
 
-## How to Reproduce
+## Local Setup
 
-**Prerequisites:** AWS CLI configured, Terraform, Docker, Node.js + pnpm, Cloudflare domain, GitHub repo with `AWS_ROLE_ARN` secret.
+### Prerequisites
 
-### 1. Run locally
+- Node.js
+- pnpm
+- Docker
+
+### Run the application
+
+Install dependencies and start the development server:
+
 ```bash
-pnpm install && pnpm dev
+pnpm install
+pnpm dev
 ```
 
-### 2. Build and test Docker image
+The application will be available at:
+
+```
+http://localhost:5173
+```
+
+### Run with Docker
+
+Build the production image:
+
 ```bash
 docker build --platform linux/amd64 -f Dockerfile.mine -t it-tools:local .
+```
+
+Run the container:
+
+```bash
 docker run -p 80:80 it-tools:local
 ```
 
-### 3. Set up OIDC (one time only)
-```bash
-cd aws && terraform init
-terraform apply \
-  -target=aws_iam_openid_connect_provider.github \
-  -target=aws_iam_role.github_actions \
-  -target=aws_iam_role_policy_attachment.github_actions_ecr \
-  -target=aws_iam_role_policy_attachment.github_actions_admin \
-  -var="container_image=placeholder"
+Then open:
+
 ```
-Add the role ARN as `AWS_ROLE_ARN` in your GitHub repository secrets.
-
-### 4. Deploy
-```bash
-git push origin main
+http://localhost
 ```
-GitHub Actions builds the image, pushes to ECR, and runs Terraform automatically.
-
-### 5. Update Cloudflare DNS
-```bash
-terraform output alb_dns_name
-```
-Update your `it-tools` CNAME record in Cloudflare to the new ALB DNS name (DNS only, not proxied).
-
-### 6. Verify
-Visit `https://it-tools.abdijalil.com` — loads with padlock. `http://` redirects to `https://` automatically.
-
-### Teardown
-```bash
-terraform destroy -var="container_image=<ecr-image-uri>"
-```
-
----
-
-## CI/CD Pipelines
-
-**docker-build.yml** — triggers on push to `main` or manual dispatch. Authenticates to AWS via OIDC, builds with `--platform linux/amd64`, tags with commit SHA, pushes to ECR.
-
-**terraform-deploy.yml** — triggers automatically after docker-build. Runs `terraform init → plan → apply`, waits 60s for ECS to start, then health checks the live URL. Fails the pipeline if the app is unhealthy.
-
----
 
 ## Challenges
 
