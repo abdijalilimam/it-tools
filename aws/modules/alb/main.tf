@@ -33,9 +33,10 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = var.public_subnet_ids
 
-  lifecycle {
+  /*lifecycle {
     prevent_destroy = true
   }
+  */
   tags = {
     Name = var.alb_name
   }

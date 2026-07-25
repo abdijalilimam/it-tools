@@ -1,133 +1,133 @@
-<picture>
-    <source srcset="./.github/logo-dark.png" media="(prefers-color-scheme: light)">
-    <source srcset="./.github/logo-white.png" media="(prefers-color-scheme: dark)">
-    <img src="./.github/logo-dark.png" alt="logo">
-</picture>
+# IT Tools — Production Deployment on AWS
 
-<p align="center">
-Useful tools for developer and people working in IT. <a href="https://it-tools.tech">Try it!</a>
-</p>
+A production deployment of [it-tools](https://github.com/CorentinTh/it-tools) — a handy collection of developer utilities. containerised with Docker and deployed to AWS ECS Fargate using Terraform, with a fully automated CI/CD pipeline via GitHub Actions.
 
-## Functionalities and roadmap
+**Live at: https://it-tools.abdijalil.com**
 
-Please check the [issues](https://github.com/CorentinTh/it-tools/issues) to see if some feature listed to be implemented.
+---
 
-You have an idea of a tool? Submit a [feature request](https://github.com/CorentinTh/it-tools/issues/new/choose)!
+## Overview
 
-## Self host
+This project takes an existing open-source app and deploys it. The goal wasn't just to get it running, it was to do it right, with infrastructure as code, automated deployments, HTTPS, and a custom domain. The journey started with manually clickOps through the AWS Console to understand every service, then rebuilding everything as Terraform and automating it with GitHub Actions so a single `git push` handles the entire pipeline.
 
-Self host solutions for your homelab
+---
 
-**From docker hub:**
+## Architecture
 
-```sh
-docker run -d --name it-tools --restart unless-stopped -p 8080:80 corentinth/it-tools:latest
+![Architecture Diagram](architecture_-_it-tools.png)
+
+
+## Tech Stack
+
+| Category | Tool |
+|----------|------|
+| App | it-tools (Vue / TypeScript) |
+| Container | Docker, nginx:stable-alpine (multi-stage build) |
+| Registry | AWS ECR |
+| Infrastructure | Terraform (modular) |
+| Compute | AWS ECS Fargate |
+| Networking | VPC, ALB, NAT Gateway, 2 AZs |
+| DNS | Cloudflare |
+| HTTPS | AWS ACM (wildcard cert) |
+| CI/CD | GitHub Actions + OIDC |
+| State | Terraform remote state in S3 |
+
+---
+
+## Repo Structure
+
+```
+it-tools/
+├── Dockerfile.mine              # Multi-stage Docker build
+├── aws/                         # Terraform modules
+│   ├── main.tf                  # Root module + OIDC/IAM
+│   ├── variables.tf / outputs.tf / provider.tf
+│   └── modules/
+│       ├── vpc/                 # VPC, subnets, IGW, NAT Gateway
+│       ├── alb/                 # ALB, listeners, target group, SG
+│       ├── ecs/                 # Cluster, service, task def, IAM
+│       ├── ecr/                 # Container registry
+│       └── acm/                 # SSL certificate + validation
+├── .github/workflows/
+│   ├── docker-build.yml         # Build + push to ECR
+│   └── terraform-deploy.yml     # Terraform apply + health check
+├── architecture.png             # Architecture diagram
+└── screenshots/                 # Screenshots
 ```
 
-**From github packages:**
+---
 
-```sh
-docker run -d --name it-tools --restart unless-stopped -p 8080:80 ghcr.io/corentinth/it-tools:latest
+## How to Reproduce
+
+**Prerequisites:** AWS CLI configured, Terraform, Docker, Node.js + pnpm, Cloudflare domain, GitHub repo with `AWS_ROLE_ARN` secret.
+
+### 1. Run locally
+```bash
+pnpm install && pnpm dev
 ```
 
-**Other solutions:**
-
-- [Cloudron](https://www.cloudron.io/store/tech.ittools.cloudron.html)
-- [Tipi](https://www.runtipi.io/docs/apps-available)
-- [Unraid](https://unraid.net/community/apps?q=it-tools)
-
-## Contribute
-
-### Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) with the following extensions:
-
-- [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur)
-- [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [i18n Ally](https://marketplace.visualstudio.com/items?itemName=lokalise.i18n-ally)
-
-with the following settings:
-
-```json
-{
-  "editor.formatOnSave": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "i18n-ally.localesPaths": ["locales", "src/tools/*/locales"],
-  "i18n-ally.keystyle": "nested"
-}
+### 2. Build and test Docker image
+```bash
+docker build --platform linux/amd64 -f Dockerfile.mine -t it-tools:local .
+docker run -p 80:80 it-tools:local
 ```
 
-### Type Support for `.vue` Imports in TS
+### 3. Set up OIDC (one time only)
+```bash
+cd aws && terraform init
+terraform apply \
+  -target=aws_iam_openid_connect_provider.github \
+  -target=aws_iam_role.github_actions \
+  -target=aws_iam_role_policy_attachment.github_actions_ecr \
+  -target=aws_iam_role_policy_attachment.github_actions_admin \
+  -var="container_image=placeholder"
+```
+Add the role ARN as `AWS_ROLE_ARN` in your GitHub repository secrets.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+### 4. Deploy
+```bash
+git push origin main
+```
+GitHub Actions builds the image, pushes to ECR, and runs Terraform automatically.
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+### 5. Update Cloudflare DNS
+```bash
+terraform output alb_dns_name
+```
+Update your `it-tools` CNAME record in Cloudflare to the new ALB DNS name (DNS only, not proxied).
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+### 6. Verify
+Visit `https://it-tools.abdijalil.com` — loads with padlock. `http://` redirects to `https://` automatically.
 
-### Project Setup
-
-```sh
-pnpm install
+### Teardown
+```bash
+terraform destroy -var="container_image=<ecr-image-uri>"
 ```
 
-### Compile and Hot-Reload for Development
+---
 
-```sh
-pnpm dev
-```
+## CI/CD Pipelines
 
-### Type-Check, Compile and Minify for Production
+**docker-build.yml** — triggers on push to `main` or manual dispatch. Authenticates to AWS via OIDC, builds with `--platform linux/amd64`, tags with commit SHA, pushes to ECR.
 
-```sh
-pnpm build
-```
+**terraform-deploy.yml** — triggers automatically after docker-build. Runs `terraform init → plan → apply`, waits 60s for ECS to start, then health checks the live URL. Fails the pipeline if the app is unhealthy.
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+---
 
-```sh
-pnpm test
-```
+## Challenges
 
-### Lint with [ESLint](https://eslint.org/)
+**ARM vs AMD64** — images built on Apple Silicon are incompatible with ECS Fargate by default. Fixed with `--platform linux/amd64`.
 
-```sh
-pnpm lint
-```
+**Terraform state in CI/CD** — GitHub Actions runners start fresh with no local state. Moving state to S3 solved this.
 
-### Create a new tool
+**OIDC setup** — trust policy conditions have to be exactly right (`repo:abdijalilimam/it-tools:*`). Small mistakes here cause silent auth failures.
 
-To create a new tool, there is a script that generate the boilerplate of the new tool, simply run:
+**ACM validation** — domain was on Cloudflare so DNS validation CNAMEs had to be added manually. Used a wildcard cert (`*.abdijalil.com`) to cover all subdomains.
 
-```sh
-pnpm run script:create:tool my-tool-name
-```
+**Resource conflicts** — repeated terraform destroy/apply cycles caused "resource already exists" errors. Fixed with `terraform import`.
 
-It will create a directory in `src/tools` with the correct files, and a the import in `src/tools/index.ts`. You will just need to add the imported tool in the proper category and develop the tool.
+---
 
-## Contributors
+## Screenshots
 
-Big thanks to all the people who have already contributed!
-
-[![contributors](https://contrib.rocks/image?repo=corentinth/it-tools&refresh=1)](https://github.com/corentinth/it-tools/graphs/contributors)
-
-## Credits
-
-Coded with ❤️ by [Corentin Thomasset](https://corentin.tech?utm_source=it-tools&utm_medium=readme).
-
-This project is continuously deployed using [vercel.com](https://vercel.com).
-
-Contributor graph is generated using [contrib.rocks](https://contrib.rocks/preview?repo=corentinth/it-tools).
-
-<a href="https://www.producthunt.com/posts/it-tools?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-it&#0045;tools" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=345793&theme=light" alt="IT&#0032;Tools - Collection&#0032;of&#0032;handy&#0032;online&#0032;tools&#0032;for&#0032;devs&#0044;&#0032;with&#0032;great&#0032;UX | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-<a href="https://www.producthunt.com/posts/it-tools?utm_source=badge-top-post-badge&utm_medium=badge&utm_souce=badge-it&#0045;tools" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=345793&theme=light&period=daily" alt="IT&#0032;Tools - Collection&#0032;of&#0032;handy&#0032;online&#0032;tools&#0032;for&#0032;devs&#0044;&#0032;with&#0032;great&#0032;UX | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-
-## License
-
-This project is under the [GNU GPLv3](LICENSE).
+See `screenshots/` for phase-by-phase documentation from local development to live production.

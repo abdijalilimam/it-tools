@@ -4,9 +4,10 @@ resource "aws_ecr_repository" "main" {
   name                 = var.repository_name
   image_tag_mutability = "IMMUTABLE"
   force_delete         = true
-lifecycle {
+/*lifecycle {
     prevent_destroy = true
   }
+  */
   tags = {
     Name = var.repository_name
   }
