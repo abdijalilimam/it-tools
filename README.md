@@ -115,4 +115,4 @@ http://localhost
 
 ## Screenshots
 
-See `screenshots/` for phase-by-phase documentation from local development to live production.
+See `screenshots/` documentation from local development to live production.
