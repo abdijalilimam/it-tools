@@ -14,8 +14,7 @@ This project takes an existing open-source app and deploys it. The goal wasn't j
 
 ## Architecture
 
-![Architecture Diagram](architecture_-_it-tools.png)
-
+![Architecture Diagram](architecture-it-tools.png)
 
 ## Tech Stack
 
