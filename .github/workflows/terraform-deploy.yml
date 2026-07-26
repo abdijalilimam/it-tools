@@ -1,6 +1,5 @@
 #terraform deploy
 name: Terraform Deploy
-
 on:
   workflow_run:
     workflows: ["Docker Build and Push"]
@@ -12,7 +11,6 @@ env:
   AWS_REGION: us-east-2
   TF_DIR: ./aws
   APP_URL: https://it-tools.abdijalil.com
-  CONTAINER_IMAGE: 305476115260.dkr.ecr.us-east-2.amazonaws.com/it-tools:${{ github.sha }}
 
 jobs:
   deploy:
@@ -34,21 +32,20 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-          terraform_version: 1.5.0
+        terraform_version: 1.5.0
 
     - name: Terraform Init
       working-directory: ${{ env.TF_DIR }}
       run: terraform init
-    
+
     - name: Terraform plan
       working-directory: ${{ env.TF_DIR }}
-      run: terraform plan -var="container_image=${{ env.CONTAINER_IMAGE }}" -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
-    
-    
+      run: terraform plan -var="container_image=305476115260.dkr.ecr.us-east-2.amazonaws.com/it-tools:${{ github.sha }}" -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
+
     - name: Terraform apply
       working-directory: ${{ env.TF_DIR }}
-      run: terraform apply -auto-approve -var="container_image=${{ env.CONTAINER_IMAGE }}" -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
-
+      run: terraform apply -auto-approve -var="container_image=305476115260.dkr.ecr.us-east-2.amazonaws.com/it-tools:${{ github.sha }}" -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
+      
     - name: Health Check
       run: |
         sleep 60
