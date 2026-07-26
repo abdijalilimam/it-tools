@@ -1,7 +1,3 @@
-module "ecr" {
-  source          = "./modules/ecr"
-  repository_name = var.project_name
-}
 module "vpc" {
   source              = "./modules/vpc"
   vpc_name            = var.project_name

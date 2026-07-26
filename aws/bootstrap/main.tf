@@ -1,4 +1,13 @@
+#ECR
+resource "aws_ecr_repository" "main" {
+  name                 = "it-tools"
+  image_tag_mutability = "IMMUTABLE"
+  force_delete         = true
 
+  tags = {
+    Name = "it-tools"
+  }
+}
 # OIDC Provider - allows GitHub Actions to authenticate with AWS
 #had to add life cycle to prevent it to from deleting when doing terrafrom destroy 
 
