@@ -55,3 +55,14 @@ variable "memory" {
   type        = string
   default     = "512"
 }
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token for DNS management"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID for abdijalil.com"
+  type        = string
+  default     = "75074fba5961a0451d70fb2f279d7e11"
+}

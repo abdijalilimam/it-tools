@@ -42,12 +42,12 @@ jobs:
     
     - name: Terraform plan
       working-directory: ${{ env.TF_DIR }}
-      run: terraform plan -var="container_image=${{ env.CONTAINER_IMAGE }}"
+      run: terraform plan -var="container_image=${{ env.CONTAINER_IMAGE }}" -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
     
     
     - name: Terraform apply
       working-directory: ${{ env.TF_DIR }}
-      run: terraform apply -auto-approve -var="container_image=${{ env.CONTAINER_IMAGE }}"
+      run: terraform apply -auto-approve -var="container_image=${{ env.CONTAINER_IMAGE }}" -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}"
 
     - name: Health Check
       run: |
