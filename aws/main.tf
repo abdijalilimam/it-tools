@@ -31,11 +31,3 @@ module "ecs" {
   alb_security_group_id = module.alb.alb_security_group_id
 }
 
-resource "cloudflare_record" "it_tools" {
-  zone_id = var.cloudflare_zone_id
-  name    = "it-tools"
-  content = module.alb.alb_dns_name
-  type    = "CNAME"
-  ttl     = 1
-  proxied = false
-}
