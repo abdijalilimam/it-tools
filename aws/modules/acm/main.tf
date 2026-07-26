@@ -12,7 +12,3 @@ resource "aws_acm_certificate" "main" {
   }
 }
 
-# this is for acm to wait for validation before moving on
-resource "aws_acm_certificate_validation" "main" {
-  certificate_arn = aws_acm_certificate.main.arn
-}
