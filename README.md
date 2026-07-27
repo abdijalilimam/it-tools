@@ -1,14 +1,14 @@
 # IT Tools — Production Deployment on AWS
 
-A production deployment of [it-tools](https://github.com/CorentinTh/it-tools) — a handy collection of developer utilities. containerised with Docker and deployed to AWS ECS Fargate using Terraform, with a fully automated CI/CD pipeline via GitHub Actions.
+A production deployment of [it-tools](https://github.com/CorentinTh/it-tools) a handy collection of developer utilities. containerised with Docker and deployed to AWS ECS Fargate using Terraform, with a fully automated CI/CD pipeline via GitHub Actions.
 
-**Live at: https://it-tools.abdijalil.com**
+**Live at: https://it-tools.abdijalil.dev**
 
 ---
 
 ## Overview
 
-This project takes an existing open-source app and deploys it. The goal wasn't just to get it running, it was to do it right, with infrastructure as code, automated deployments, HTTPS, and a custom domain. The journey started with manually clickOps through the AWS Console to understand every service, then rebuilding everything as Terraform and automating it with GitHub Actions so a single `git push` handles the entire pipeline.
+This project takes an existing open-source app and deploys it. The goal wasn't just to get it running, it was to do it right, with infrastructure as code, automated deployments, HTTPS, and a custom domain. The project started with manually clickOps through the AWS Console to understand every service, then rebuilding everything with Terraform and automating it with GitHub Actions so a single `git push` handles the entire pipeline.
 
 ---
 
@@ -26,7 +26,7 @@ This project takes an existing open-source app and deploys it. The goal wasn't j
 | Infrastructure | Terraform (modular) |
 | Compute | AWS ECS Fargate |
 | Networking | VPC, ALB, NAT Gateway, 2 AZs |
-| DNS | Cloudflare |
+| DNS | Route 53 + Namecheap |
 | HTTPS | AWS ACM (wildcard cert) |
 | CI/CD | GitHub Actions + OIDC |
 | State | Terraform remote state in S3 |
@@ -37,7 +37,7 @@ This project takes an existing open-source app and deploys it. The goal wasn't j
 
 ```
 it-tools/
-├── Dockerfile.mine              # Multi-stage Docker build
+├── Dockerfile                   # Multi-stage Docker build
 ├── aws/                         # Terraform modules
 │   ├── main.tf                  # Root module + OIDC/IAM
 │   ├── variables.tf / outputs.tf / provider.tf
@@ -48,9 +48,10 @@ it-tools/
 │       ├── ecr/                 # Container registry
 │       └── acm/                 # SSL certificate + validation
 ├── .github/workflows/
-│   ├── docker-build.yml         # Build + push to ECR
-│   └── terraform-deploy.yml     # Terraform apply + health check
-├── architecture.png             # Architecture diagram
+│   ├──docker-build.yml          # Build + push to ECR
+│   ├──terraform-deploy.yml      # Terraform apply + health check
+│   └──terraform-destroy.yml     # Manual destroy pipeline
+├── architecture-it-tools.png    # Architecture diagram
 └── screenshots/                 # Screenshots
 ```
 
@@ -84,7 +85,7 @@ http://localhost:5173
 Build the production image:
 
 ```bash
-docker docker build --platform linux/amd64 -t it-tools:local .
+docker build --platform linux/amd64 -t it-tools:local .
 ```
 
 Run the container:
@@ -99,15 +100,15 @@ Then open:
 http://localhost
 ```
 
-## Challenges
+## Issues I ran into 
 
 **ARM vs AMD64** — images built on Apple Silicon are incompatible with ECS Fargate by default. Fixed with `--platform linux/amd64`.
 
 **Terraform state in CI/CD** — GitHub Actions runners start fresh with no local state. Moving state to S3 solved this.
 
-**OIDC setup** — trust policy conditions have to be exactly right (`repo:abdijalilimam/it-tools:*`). Small mistakes here cause silent auth failures.
+**OIDC setup** — trust policy conditions have to be exactly right (`repo:abdijalilimam/it-tools:*`). Small mistakes here cause  auth failures.
 
-**ACM validation** — domain was on Cloudflare so DNS validation CNAMEs had to be added manually. Used a wildcard cert (`*.abdijalil.com`) to cover all subdomains.
+**DNS automation** — Initially used Cloudflare for DNS which required manually updating the CNAME record after every deploy since Cloudflare Registrar doesn't allow external nameservers. I solved by purchasing `abdijalil.dev` through Namecheap, pointing nameservers to Route 53, and adding an `aws_route53_record` resource to Terraform so DNS updates automatically after every `terraform apply`.
 
 **Resource conflicts** — repeated terraform destroy/apply cycles caused "resource already exists" errors. Fixed with `terraform import`.
 

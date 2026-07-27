@@ -1,10 +1,15 @@
 #build docker image and push to ecr
+#added paths-ignore to not trigger the pipe every single push 
 name: Docker Build and Push
 
 on:
   push:
     branches:
       - main
+    paths-ignore: 
+      - 'README.md'
+      - 'screenshots/**'
+      - '*.png'
   workflow_dispatch:
 
 env:

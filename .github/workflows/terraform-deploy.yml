@@ -10,7 +10,7 @@ on:
 env:
   AWS_REGION: us-east-2
   TF_DIR: ./aws
-  APP_URL: https://it-tools.abdijalil.com
+  APP_URL: https://it-tools.abdijalil.dev
 
 jobs:
   deploy:

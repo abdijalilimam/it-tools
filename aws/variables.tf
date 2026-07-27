@@ -41,7 +41,7 @@ variable "container_image" {
 variable "domain_name" {
   description = "Domain name for ACM certificate"
   type        = string
-  default     = "abdijalil.com"
+  default     = "abdijalil.dev"
 }
 
 variable "cpu" {

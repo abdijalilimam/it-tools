@@ -1,0 +1,39 @@
+#destroy pipelines 
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-2
+  TF_DIR: ./aws
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      working-directory: ${{ env.TF_DIR }}
+      run: terraform init
+      
+    - name: Terraform Destroy
+      working-directory: ${{ env.TF_DIR }}
+      run: terraform destroy -auto-approve -var="container_image=305476115260.dkr.ecr.us-east-2.amazonaws.com/it-tools:latest"

@@ -31,3 +31,10 @@ module "ecs" {
   alb_security_group_id = module.alb.alb_security_group_id
 }
 
+resource "aws_route53_record" "it_tools" {
+  zone_id = "Z096173811PM4RIDLSTPN"
+  name    = "it-tools.abdijalil.dev"
+  type    = "CNAME"
+  ttl     = 300
+  records = [module.alb.alb_dns_name]
+}
