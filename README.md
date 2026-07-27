@@ -84,7 +84,7 @@ http://localhost:5173
 Build the production image:
 
 ```bash
-docker build --platform linux/amd64 -f Dockerfile.mine -t it-tools:local .
+docker docker build --platform linux/amd64 -t it-tools:local .
 ```
 
 Run the container:

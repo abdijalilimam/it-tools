@@ -33,7 +33,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build Docker image
-      run: docker build --platform linux/amd64 -f Dockerfile.mine -t ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
+      run: docker build --platform linux/amd64 -t ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
    
     - name: push image to ecr 
       run: docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
