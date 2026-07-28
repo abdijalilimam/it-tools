@@ -7,6 +7,7 @@ A production deployment of [it-tools](https://github.com/CorentinTh/it-tools) a 
 ---
 
 ## Overview
+
 it-tools is an open-source app that consist of utility tools developers. It's built with Vue and TypeScript, compiles down to static files, and is served by nginx with no backend or database. I picked it because it's the kind of app that looks simple on the surface but actually needed real infrastructure to run properly. It needed a multi-stage Docker build, a proper web server, HTTPS, and a deployment pipeline. That gap between how simple the app is and how much work the infrastructure requires is exactly what made it a good  target for me.ECS Fargate made more sense than Vercel because it locks you into their ecosystem, providing no ability to troubleshoot when a deployment fails. A VM was not even considered because you end up spending more time patching and managing the OS than actually building infrastructure. Fargate sits in the right spot, AWS handles the compute, and you still have full control over the networking, security, and scaling. It integrates natively with ECR, ALB, and IAM, supports multi-AZ deployments, and scales horizontally just by increasing the desired task count. The whole thing started with manually clickOps through the AWS Console to understand each service, then got rebuilt in Terraform and automated with GitHub Actions.
 ---
 
