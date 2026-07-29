@@ -124,13 +124,23 @@ http://localhost
 ## Pipeline Screenshots
 
 **Docker Build and Push**
+
 ![Docker Build Pipeline](screenshots/phase-7/docker-build.png)
 
+---
+
 **Terraform Deploy**
+
 ![Terraform Deploy Pipeline](screenshots/phase-7/terraform-deploy.png)
 
+---
+
 **Terraform Destroy**
+
 ![Terraform Destroy Pipeline](screenshots/phase-7/terraform-destroy.png)
 
+---
+
 **Health Check**
+
 ![Health Check Passing](screenshots/phase-7/healthcheck.png)
