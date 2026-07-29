@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  TF_DIR: ./aws
+  TF_DIR: ./terraform
   APP_URL: https://it-tools.abdijalil.dev
 
 jobs:

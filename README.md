@@ -39,7 +39,7 @@ ECS Fargate made more sense than Vercel because it locks you into their ecosyste
 ```
 it-tools/
 ├── Dockerfile                   # Multi-stage Docker build
-├── aws/                         # Terraform modules
+├── terraform/                   # Terraform modules
 │   ├── main.tf                  # Root module + OIDC/IAM
 │   ├── variables.tf / outputs.tf / provider.tf
 │   └── modules/
